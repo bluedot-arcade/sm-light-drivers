@@ -12,8 +12,20 @@ extern "C" {
 
 EXPORT BOOLEAN WINAPI DllMain(IN HINSTANCE, IN DWORD, IN LPVOID);
 
+/**
+ * @brief Initialize the PacDrive devices.
+ * @return The number of PacDrive devices found.
+ */
 EXPORT int PacInitialize(void);
+
+/**
+ * @brief Shutdown the PacDrive devices.
+ */
 EXPORT void PacShutdown(void);
+
+/**
+ * @brief Set the state of the LEDs on the PacDrive device.
+ */
 EXPORT bool PacSetLEDStates(int deviceId, short int data);
 
 #ifdef __cplusplus
