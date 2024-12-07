@@ -1,13 +1,31 @@
-# BlueDot SM/ITG Light Drivers
+<p align="right">
+    <a name="readme-top"></a>
+    <a href="/LICENSE.txt"><img src="https://img.shields.io/badge/license-MIT-green" /></a> <a href=""><img src="https://img.shields.io/badge/version-0.1-green" /></a> 
+</p>
+<br><br>
+<p align="center">
+    <h1 align="center">BlueDot SM/ITG Light Drivers</h1>
+    <p align="center">This repository contains the source code for the light drivers to use
+with Stepmania/OpenITG/ITGMania enabling support of BlueDot light boards.</p>
+    <p align="center"><strong><a href="https://docs.bluedotarcade.com/boards/bd845-pwb">Explore the docs</a></strong></p>
+    <br><br>
+</p>
 
-This project contains the source code for the light drivers to use
-with Stepmania/OpenITG/ITGMania enabling support of BlueDot light boards.
+# Support table
 
-Supported boards:
-- BlueDot Unilight
+## Supported boards
 
-Supported Stepmania versions:
-- ITGMania (Windows x64)
+| Board name | Description | Status |
+|------------|-------------|--------|
+| [BlueDot Unilight] | Driving DDR cabinet lights through USB. | Supported |
+
+## Supported games
+
+| Game name | Description | Status |
+|-----------|-------------|--------|
+| [Stepmania] | A free and open-source rhythm game. | Unsupported |
+| [OpenITG] | An open-source clone of In The Groove. | Unsupported |
+| [ITGMania] | A fork of OpenITG with additional features. | Supported |
 
 ## Compile from source
 
@@ -87,4 +105,7 @@ cmake --build .
 The compiled binaries will be located in the `build` directory.
 
 
-
+[BlueDot Unilight]: https://docs.bluedotarcade.com/boards/unilight
+[ITGMania]: https://www.itgmania.com/
+[Stepmania]: https://www.stepmania.com/
+[OpenITG]: https://github.com/openitg/openitg
