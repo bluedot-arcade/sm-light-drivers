@@ -11,21 +11,23 @@ with Stepmania/OpenITG/ITGMania enabling support of BlueDot light boards.</p>
     <br><br>
 </p>
 
-# Support table
+## Support table
 
-## Supported boards
+### Supported boards
 
 | Board name | Description | Status |
 |------------|-------------|--------|
 | [BlueDot Unilight] | Driving DDR cabinet lights through USB. | Supported |
 
-## Supported games
+### Supported games
 
-| Game name | Description | Status |
-|-----------|-------------|--------|
-| [Stepmania] | A free and open-source rhythm game. | Unsupported |
-| [OpenITG] | An open-source clone of In The Groove. | Unsupported |
-| [ITGMania] | A fork of OpenITG with additional features. | Supported |
+| Game name | Platform | Status | Driver |
+|-----------|----------|--------|--------|
+| [Stepmania] | All | Unsupported | - |
+| [OpenITG] | All | Unsupported | - |
+| [ITGMania] | Win64 | Supported | pacdrive64.dll |
+| [ITGMania] | Linux | Unsupported | - |
+| [ITGMania] | MacOS | Unsupported | - |
 
 ## Compile from source
 
@@ -42,7 +44,7 @@ MinGW-w64. You can also use Visual Studio if you prefer.
 
 1. Install CMake from https://cmake.org/download/
 2. Install MinGW-w64 from https://sourceforge.net/projects/mingw-w64/
-3. Add the MinGW-w64 bin directory to the system PATH
+3. Make sure both CMake and MinGW-w64 are added to the system PATH.
 3. Clone the repository by running the following commands in a terminal:
 
 ```shell
