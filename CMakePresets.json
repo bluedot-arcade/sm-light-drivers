@@ -1,0 +1,53 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 15,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
+      }
+    },
+    {
+      "name": "win32",
+      "inherits": "default",
+      "description": "Configure for Windows 32-bit toolchain",
+      "toolchainFile": "${sourceDir}/toolchain/win32-toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Windows",
+        "CMAKE_SYSTEM_VERSION": "10"
+      }
+    },
+    {
+      "name": "win64",
+      "inherits": "default",
+      "description": "Configure for Windows 64-bit toolchain",
+      "toolchainFile": "${sourceDir}/toolchain/win64-toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Windows",
+        "CMAKE_SYSTEM_VERSION": "10"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "win32",
+      "configurePreset": "win32"
+    },
+    {
+      "name": "win64",
+      "configurePreset": "win64"
+    }
+  ]
+}
