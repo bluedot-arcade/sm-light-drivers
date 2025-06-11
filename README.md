@@ -19,15 +19,16 @@ with Stepmania/OpenITG/ITGMania enabling support of BlueDot light boards.</p>
 |------------|-------------|--------|
 | [BlueDot Unilight] | Driving DDR cabinet lights through USB. | Supported |
 
-### Supported games
+### Supported games and platforms
 
-| Game name | Platform | Status | Driver |
-|-----------|----------|--------|--------|
-| [Stepmania] | All | Unsupported | - |
-| [OpenITG] | All | Unsupported | - |
-| [ITGMania] | Win64 | Supported | pacdrive64.dll |
-| [ITGMania] | Linux | Unsupported | - |
-| [ITGMania] | MacOS | Unsupported | - |
+The following table lists the supported combinations of games and platforms and the corresponding suggested
+driver to use:
+
+| Game        | Platform | Driver                 |
+|-------------|----------|------------------------|
+| [Stepmania] | Win32    | parallel_lights_io.dll |
+| [OpenITG]   | Win32    | parallel_lights_io.dll |
+| [ITGMania]  | Win64    | pacdrive64.dll         |
 
 ## Compile from source
 
