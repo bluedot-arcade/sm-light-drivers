@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <iostream>
+#include <thread>
 
 typedef int (WINAPI *PacInitializeFunc)();
 typedef void (WINAPI *PacShutdownFunc)();
@@ -25,8 +26,12 @@ int main() {
     int initResult = PacInitialize();
     std::cout << "PacInitialize result: " << initResult << std::endl;
 
-    bool setLEDResult = PacSetLEDStates(0, 0xFFFF);
-    std::cout << "PacSetLEDStates result: " << setLEDResult << std::endl;
+    for (int i = 0; i < 10; ++i) {
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        PacSetLEDStates(0, static_cast<short int>(0xFFFF));
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        PacSetLEDStates(0, 0);
+    }
 
     PacShutdown();
     FreeLibrary(hModule);
