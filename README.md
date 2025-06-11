@@ -50,6 +50,7 @@ MinGW-w64. You can also use Visual Studio if you prefer.
 ```shell
 git clone git@github.com:bluedot-arcade/sm-light-drivers.git
 cd sm-light-drivers
+git submodule update --init --recursive
 ```
 
 4. Create a build directory and configure the project using CMake:
@@ -81,6 +82,7 @@ sudo apt-get install cmake mingw-w64
 ```shell
 git clone git@github.com:bluedot-arcade/sm-light-drivers.git
 cd sm-light-drivers
+git submodule update --init --recursive
 ```
 
 3. Create a build directory and configure the project using CMake:
