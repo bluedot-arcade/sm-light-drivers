@@ -1,4 +1,6 @@
-#include <parallel_lights_io.h>
+#define WIN32_LEAN_AND_MEAN
+
+#include "parallel_lights_io.h"
 #include <unilight.h>
 
 #define PORT_LPT1 0x378
@@ -22,6 +24,8 @@ BOOLEAN WINAPI DllMain(IN HINSTANCE hDllHandle, IN DWORD nReason, IN LPVOID Rese
       bd_unilight_close();
     }
     break;
+  default:
+      break;
   }
   return TRUE;
 }
@@ -63,24 +67,79 @@ void SetPad2Lights(char Data) {
   }
 }
 
-void PortOut(short int Port, char Data) {
-  switch(Port) {
+short int WINAPI IsDriverInstalled(){
+    #pragma EXPORT
+    return 1;
+}
+
+void WINAPI PortOut(short int port, char data)
+{
+#pragma EXPORT
+  switch(port) {
     case PORT_LPT1:
-      SetCabLights(Data);
+      SetCabLights(data);
       break;
     case PORT_LPT2:
-      SetPad1Lights(Data);
+      SetPad1Lights(data);
       break;
     case PORT_LPT3:
-      SetPad2Lights(Data);
+      SetPad2Lights(data);
       break;
     default:
-      // Invalid port
       break;
   }
 }
 
-short int IsDriverInstalled() {
-  return true;
+// --- STUB IMPLEMENTATIONS FOR OTHER EXPORTED FUNCTIONS (with #pragma EXPORT) ---
+
+char WINAPI PortIn(short int port){
+#pragma EXPORT
+  return '\0';
 }
 
+void WINAPI ClrPortBit(short int Port, int Bit) {
+  #pragma EXPORT
+}
+
+short int WINAPI GetPortBit(short int Port, int Bit) {
+  #pragma EXPORT
+  return 0;
+}
+
+void WINAPI LeftPortShift(short int Port, int ShiftAmount) {
+  #pragma EXPORT
+}
+
+void WINAPI NotPortBit(short int Port, int Bit) {
+  #pragma EXPORT
+}
+
+unsigned long WINAPI PortDWordIn(short int Port) {
+  #pragma EXPORT
+  return 0;
+}
+
+void WINAPI PortDWordOut(short int Port, unsigned long Data) {
+  #pragma EXPORT
+}
+
+short int WINAPI PortWordIn(short int Port) {
+  #pragma EXPORT
+  return 0;
+}
+
+void WINAPI PortWordOut(short int Port, short int Data) {
+  #pragma EXPORT
+}
+
+void WINAPI ReleasePort(short int Port) {
+  #pragma EXPORT
+}
+
+void WINAPI RightPortShift(short int Port, int ShiftAmount) {
+  #pragma EXPORT
+}
+
+void WINAPI SetPortBit(short int Port, int Bit) {
+  #pragma EXPORT
+}

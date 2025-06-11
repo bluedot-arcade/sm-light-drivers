@@ -10,22 +10,24 @@ typedef void (WINAPI *PortOutFunc)(short int, char);
 typedef short int (WINAPI *IsDriverInstalledFunc)();
 
 int main() {
-    HMODULE hModule = LoadLibrary("parallel_lights_io.dll");
+    const HMODULE hModule = LoadLibrary("parallel_lights_io.dll");
     if (!hModule) {
-        std::cerr << "Failed to load DLL" << std::endl;
+        const DWORD error = GetLastError(); // Get the last error code
+        std::cerr << "Failed to load DLL. Error code: " << error << " (" << std::system_category().message(error) << ")" << std::endl;
         return 1;
     }
 
-    PortOutFunc PortOut = (PortOutFunc)GetProcAddress(hModule, "PortOut");
-    IsDriverInstalledFunc IsDriverInstalled = (IsDriverInstalledFunc)GetProcAddress(hModule, "IsDriverInstalled");
+    const auto PortOut = reinterpret_cast<PortOutFunc>(GetProcAddress(hModule, "PortOut"));
+    const auto IsDriverInstalled = reinterpret_cast<IsDriverInstalledFunc>(GetProcAddress(hModule, "IsDriverInstalled"));
 
     if (!PortOut || !IsDriverInstalled) {
-        std::cerr << "Failed to get function addresses" << std::endl;
+        const DWORD error = GetLastError(); // Get the last error code for GetProcAddress failure
+        std::cerr << "Failed to get function addresses. Error code: " << error << " (" << std::system_category().message(error) << ")" << std::endl;
         FreeLibrary(hModule);
         return 1;
     }
 
-    short int initResult = IsDriverInstalled();
+    const short int initResult = IsDriverInstalled();
     std::cout << "IsDriverInstalled result: " << initResult << std::endl;
 
     for (int i = 0; i < 10; ++i) {
@@ -40,6 +42,5 @@ int main() {
     }
 
     FreeLibrary(hModule);
-
     return 0;
 }

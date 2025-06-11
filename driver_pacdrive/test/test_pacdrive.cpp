@@ -9,7 +9,8 @@ typedef bool (WINAPI *PacSetLEDStatesFunc)(int, short int);
 int main() {
     HMODULE hModule = LoadLibrary("PacDrive32.dll");
     if (!hModule) {
-        std::cerr << "Failed to load DLL" << std::endl;
+        DWORD error = GetLastError(); // Get the last error code
+        std::cerr << "Failed to load DLL. Error code: " << error << " (" << std::system_category().message(error) << ")" << std::endl;
         return 1;
     }
 
@@ -18,7 +19,8 @@ int main() {
     PacSetLEDStatesFunc PacSetLEDStates = (PacSetLEDStatesFunc)GetProcAddress(hModule, "PacSetLEDStates");
 
     if (!PacInitialize || !PacShutdown || !PacSetLEDStates) {
-        std::cerr << "Failed to get function addresses" << std::endl;
+        DWORD error = GetLastError(); // Get the last error code for GetProcAddress failure
+        std::cerr << "Failed to get function addresses. Error code: " << error << " (" << std::system_category().message(error) << ")" << std::endl;
         FreeLibrary(hModule);
         return 1;
     }
