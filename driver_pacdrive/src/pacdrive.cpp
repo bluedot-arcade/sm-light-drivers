@@ -38,10 +38,10 @@ bool PacSetLEDStates(int deviceId, short int data) {
   if(IS_BIT_SET(data, 1)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_DOWN;
   if(IS_BIT_SET(data, 2)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_LEFT;
   if(IS_BIT_SET(data, 3)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_RIGHT;
-  if(IS_BIT_SET(data, 4)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_UP;
-  if(IS_BIT_SET(data, 5)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_DOWN;
-  if(IS_BIT_SET(data, 6)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_LEFT;
-  if(IS_BIT_SET(data, 7)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_RIGHT;
+  if(IS_BIT_SET(data, 4)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_UP;
+  if(IS_BIT_SET(data, 5)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_DOWN;
+  if(IS_BIT_SET(data, 6)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_LEFT;
+  if(IS_BIT_SET(data, 7)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_RIGHT;
   if(bd_unilight_set_pad_lights(pad_lights_state) != 0) {
     success = false;
   }
