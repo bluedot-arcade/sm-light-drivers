@@ -43,10 +43,10 @@ void SetCabLights(char Data) {
 
 void SetPad1Lights(char Data) {
   uint8_t pad_lights_state = 0;
-  if(IS_BIT_SET(data, 0)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_LEFT;
-  if(IS_BIT_SET(data, 1)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_RIGHT;
-  if(IS_BIT_SET(data, 2)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_UP;
-  if(IS_BIT_SET(data, 3)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_DOWN;
+  if(IS_BIT_SET(Data, 0)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_LEFT;
+  if(IS_BIT_SET(Data, 1)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_RIGHT;
+  if(IS_BIT_SET(Data, 2)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_UP;
+  if(IS_BIT_SET(Data, 3)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P1_DOWN;
   if(bd_unilight_set_pad_lights(pad_lights_state) != 0) {
     // No error handling in this implementation
   }
@@ -54,10 +54,10 @@ void SetPad1Lights(char Data) {
 
 void SetPad2Lights(char Data) {
   uint8_t pad_lights_state = 0;
-  if(IS_BIT_SET(data, 0)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_LEFT;
-  if(IS_BIT_SET(data, 1)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_RIGHT;
-  if(IS_BIT_SET(data, 2)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_UP;
-  if(IS_BIT_SET(data, 3)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_DOWN;
+  if(IS_BIT_SET(Data, 0)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_LEFT;
+  if(IS_BIT_SET(Data, 1)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_RIGHT;
+  if(IS_BIT_SET(Data, 2)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_UP;
+  if(IS_BIT_SET(Data, 3)) pad_lights_state |= BD_UNILIGHT_LIGHT_PAD_P2_DOWN;
   if(bd_unilight_set_pad_lights(pad_lights_state) != 0) {
     // No error handling in this implementation
   }
