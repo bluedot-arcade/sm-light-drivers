@@ -38,6 +38,9 @@ Windows platform will be able to generate only Windows binaries, while
 Linux will be able to generate both Windows and Linux binaries using
 a MinGW-w64 cross-toolchain.
 
+**Warning:** Currently the parallel_lights_io.dll driver for Win32 requires Visual Studio 17 to compile since it uses
+some pragma and dll export features that are specific to MSVC.
+
 ### Compile on Windows
 
 This is the suggested way to compile the project on Windows using
