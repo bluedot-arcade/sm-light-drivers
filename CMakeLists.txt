@@ -5,8 +5,8 @@ project(lightDrivers VERSION 0.5)
 set(BUILD_SHARED_LIBS OFF)
 
 # Boards to build the drivers for. Each board variant gets its own set of DLLs
-# in the <build>/<board>[/<player>] directory, e.g. build/unilight/PacDrive32.dll.
-# The UNISON board drives a single pad, so it is
+# in the <build>/<board>[/<player>] directory, e.g. build/unilight/PacDrive32.dll
+# (PacDrive64.dll on 64-bit). The UNISON board drives a single pad, so it is
 # built for both players: build/unison/p1 and build/unison/p2.
 set(BD_BOARDS "unilight;unison" CACHE STRING "Target boards (unilight, unison)")
 

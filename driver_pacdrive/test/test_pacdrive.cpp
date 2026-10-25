@@ -2,12 +2,16 @@
 #include <iostream>
 #include <thread>
 
+#ifndef PACDRIVE_DLL_NAME
+#define PACDRIVE_DLL_NAME "PacDrive32.dll"
+#endif
+
 typedef int (WINAPI *PacInitializeFunc)();
 typedef void (WINAPI *PacShutdownFunc)();
 typedef bool (WINAPI *PacSetLEDStatesFunc)(int, short int);
 
 int main() {
-    HMODULE hModule = LoadLibrary("PacDrive32.dll");
+    HMODULE hModule = LoadLibrary(PACDRIVE_DLL_NAME);
     if (!hModule) {
         DWORD error = GetLastError(); // Get the last error code
         std::cerr << "Failed to load DLL. Error code: " << error << " (" << std::system_category().message(error) << ")" << std::endl;
