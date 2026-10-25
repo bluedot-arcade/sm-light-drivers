@@ -4,6 +4,11 @@ project(lightDrivers VERSION 0.5)
 # Link hidapi statically
 set(BUILD_SHARED_LIBS OFF)
 
+# Link the MinGW runtime statically so the DLLs do not depend on libgcc/libstdc++ DLLs
+if(MINGW)
+    add_link_options(-static-libgcc -static-libstdc++)
+endif()
+
 # Boards to build the drivers for. Each board variant gets its own set of DLLs
 # in the <build>/<board>[/<player>] directory, e.g. build/unilight/PacDrive32.dll
 # (PacDrive64.dll on 64-bit). The UNISON board drives a single pad, so it is

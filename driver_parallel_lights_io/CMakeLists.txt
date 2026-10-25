@@ -18,6 +18,11 @@ foreach(VARIANT ${BD_BOARD_VARIANTS})
         LIBRARY_OUTPUT_DIRECTORY "${VARIANT_OUTPUT_DIR}"
         ARCHIVE_OUTPUT_DIRECTORY "${VARIANT_OUTPUT_DIR}")
 
+    # Export stdcall functions without the @N suffix, e.g. PortOut instead of PortOut@8
+    if(MINGW)
+        target_link_options(parallel_lights_io_${VARIANT} PRIVATE -Wl,--kill-at)
+    endif()
+
     # Generate test executable next to the board DLL
 
     add_executable(parallel_lights_io_test_${VARIANT} ${TEST_SOURCES})
