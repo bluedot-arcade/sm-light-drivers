@@ -13,66 +13,67 @@ with Stepmania/OpenITG/ITGMania enabling support of BlueDot light boards.</p>
 
 ## Support table
 
-### Supported boards
+| Board              | Description                                     |
+|--------------------|-------------------------------------------------|
+| [BlueDot Unilight] | Driving DDR cabinet lights through USB.         |
+| BlueDot UNISON     | Single pad IO board, with cabinet lights.       |
 
-| Board name | Description | Status |
-|------------|-------------|--------|
-| [BlueDot Unilight] | Driving DDR cabinet lights through USB. | Supported |
-| BlueDot UNISON     | Single pad IO board with cabinet lights. Built in a P1 and a P2 version. | Supported |
+| Game          | Platform    | Use                                          |
+|---------------|-------------|----------------------------------------------|
+| [Stepmania] 3.9 | Win32     | [parallel_lights_io.dll](#parallel_lights_iodll) |
+| [OpenITG]     | Win32       | [parallel_lights_io.dll](#parallel_lights_iodll) |
+| [Stepmania] 5 | Win32/Win64 | [PacDrive](#pacdrive)                        |
+| [ITGMania]    | Win64       | [SextetStream](#sextetstream) (UNISON), built-in `HidBlueDot` driver (Unilight) |
 
-Each driver is compiled once per board, see [Target boards](#target-boards).
+Drivers are built once per board, in the `unilight`, `unison/p1` and `unison/p2` directories. A UNISON
+board drives a single pad, so pick the build of the player whose pad it is connected to.
 
-### Supported games and platforms
+## Usage
 
-The following table lists the supported combinations of games and platforms and the corresponding suggested
-driver to use:
+### parallel_lights_io.dll
 
-| Game        | Platform | Driver                 |
-|-------------|----------|------------------------|
-| [Stepmania] | Win32    | parallel_lights_io.dll |
-| [OpenITG]   | Win32    | parallel_lights_io.dll |
-| [ITGMania]  | Win64    | PacDrive64.dll         |
+Emulates the parallel port lights output: LPT1 cabinet lights, LPT2 P1 pad, LPT3 P2 pad.
+
+1. Copy `parallel_lights_io.dll` built for your board next to the game executable.
+2. In `Preferences.ini` set:
+
+```ini
+LightsDriver=Parallel
+```
+
+### PacDrive
+
+Emulates the Ultimarc PacDrive library, using the LumenAR/OpenITG light order.
+
+1. Copy the DLL built for your board next to the game executable: `PacDrive32.dll` for 32-bit games,
+   `PacDrive64.dll` for 64-bit games.
+2. In `Preferences.ini` set:
+
+```ini
+LightsDriver=PacDrive
+PacDriveLightOrdering=lumenar
+```
+
+### SextetStream
+
+`UnisonSextet.exe` is a tray app that forwards the lights sent by the game SextetStream driver to up to
+two UNISON boards: the first board drives the P1 pad, the second the P2 pad (swap them from the tray menu).
+
+1. Start `UnisonSextet.exe` **before** the game, e.g. with a shortcut in the `shell:startup` folder.
+2. In `Preferences.ini` set:
+
+```ini
+LightsDriver=SextetStreamToFile
+SextetStreamOutputFilename=\\.\pipe\StepMania-Lights-SextetStream
+```
 
 ## Compile from source
 
-The project can be compiled using CMake both on Windows and Linux.
+The project is compiled with CMake and MinGW-w64 (Visual Studio works too), either on Windows or
+cross-compiling from Linux.
 
-Windows platform will be able to generate only Windows binaries, while
-Linux will be able to generate both Windows and Linux binaries using
-a MinGW-w64 cross-toolchain.
-
-Both MinGW-w64 and Visual Studio can be used to compile all the drivers.
-
-### Target boards
-
-The target board is selected at compile time with the `BD_BOARD_UNILIGHT` or `BD_BOARD_UNISON` macro.
-The UNISON board drives a single pad, so its drivers also need `BD_UNISON_PLAYER` set to `1` or `2`
-to select which player's pad lights it shows. Cabinet lights are driven by both versions.
-
-By default CMake builds the drivers for every board, placing each board's DLLs in its own directory:
-
-```
-build/unilight/PacDrive32.dll
-build/unilight/parallel_lights_io.dll
-build/unison/p1/PacDrive32.dll
-build/unison/p1/parallel_lights_io.dll
-build/unison/p2/PacDrive32.dll
-build/unison/p2/parallel_lights_io.dll
-```
-
-On 64-bit builds the PacDrive driver is named `PacDrive64.dll`.
-
-To build only some boards, set the `BD_BOARDS` CMake variable, e.g. `cmake -DBD_BOARDS=unison ..`.
-
-### Compile on Windows
-
-This is the suggested way to compile the project on Windows using
-MinGW-w64. You can also use Visual Studio if you prefer.
-
-1. Install CMake from https://cmake.org/download/
-2. Install MinGW-w64 from https://sourceforge.net/projects/mingw-w64/
-3. Make sure both CMake and MinGW-w64 are added to the system PATH.
-3. Clone the repository by running the following commands in a terminal:
+1. Install CMake and MinGW-w64 (on Linux: `sudo apt-get install cmake ninja-build mingw-w64`).
+2. Clone the repository:
 
 ```shell
 git clone git@github.com:bluedot-arcade/sm-light-drivers.git
@@ -80,53 +81,27 @@ cd sm-light-drivers
 git submodule update --init --recursive
 ```
 
-4. Create a build directory and configure the project using CMake:
-
-```shell
-mkdir build
-cd build
-cmake ..
-```
-
-5. Build the project using the generated build system:
-
-```shell
-cmake --build .
-```
-
-The compiled binaries will be located in the `build/<board>` directories, e.g. `build/unison/p1`.
-
-### Compile on Linux
-
-1. Install CMake and MinGW-w64 cross-toolchain:
-
-```shell
-sudo apt-get install cmake mingw-w64
-```
-
-2. Clone the repository by running the following commands in a terminal:
-
-```shell
-git clone git@github.com:bluedot-arcade/sm-light-drivers.git
-cd sm-light-drivers
-git submodule update --init --recursive
-```
-
-3. Configure the project to use the MinGW-w64 cross-toolchain (from the repository root):
+3. Configure and build, using `win64` or `win32` (the presets use the MinGW-w64 cross-toolchain):
 
 ```shell
 cmake --preset win64
-```
-
-You can swap `win64` with `win32` to generate 32-bit binaries.
-
-4. Build the project:
-
-```shell
 cmake --build --preset win64
 ```
 
-The compiled binaries will be located in the `build/<preset>/<board>` directories, e.g. `build/win64/unison/p1/PacDrive64.dll`.
+On Windows you can also build without presets: `cmake -B build` and `cmake --build build`.
+
+The binaries are placed in a directory per board:
+
+```
+build/win64/unilight/     PacDrive64.dll  parallel_lights_io.dll
+build/win64/unison/p1/    PacDrive64.dll  parallel_lights_io.dll
+build/win64/unison/p2/    PacDrive64.dll  parallel_lights_io.dll
+build/win64/unison/       UnisonSextet.exe
+```
+
+The PacDrive driver is named `PacDrive32.dll` on 32-bit builds. To build only some boards, set
+`BD_BOARDS`, e.g. `cmake --preset win64 -DBD_BOARDS=unison`. The board is selected in code with the
+`BD_BOARD_UNILIGHT`/`BD_BOARD_UNISON` and `BD_UNISON_PLAYER` macros.
 
 
 [BlueDot Unilight]: https://docs.bluedotarcade.com/boards/unilight
