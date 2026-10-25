@@ -57,3 +57,8 @@ add_subdirectory(libs/unison)
 add_subdirectory(driver_pacdrive)
 add_subdirectory(driver_parallel_lights_io)
 
+# SextetStream bridge app for the UNISON board (Windows only)
+if(WIN32 AND "unison" IN_LIST BD_BOARDS)
+    add_subdirectory(sextet_unison)
+endif()
+
