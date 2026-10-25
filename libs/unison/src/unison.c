@@ -1,5 +1,6 @@
 #include "unison.h"
 #include <hidapi.h>
+#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -13,6 +14,8 @@
 // The other interface is the pad gamepad.
 #define BD_UNISON_VENDOR_USAGE_PAGE 0xFF00
 #define BD_UNISON_VENDOR_INTERFACE  0
+
+#define BD_UNISON_MAX_ENUMERATED 16
 
 // Report ID byte (unused by the board) + 8 bytes vendor report.
 #define BD_UNISON_REPORT_SIZE 9
@@ -33,7 +36,8 @@
 #define BD_UNISON_REPORT_BASS_RIGHT         0x20
 
 // Menu left, right, up, down and start lights of a player.
-#define BD_UNISON_REPORT_BUTTONS_ALL        0x1F
+// Bits match BD_UNISON_LIGHT_BTN_*.
+#define BD_UNISON_REPORT_BUTTONS_MASK       0x1F
 
 // Pad lights are mapped on P1 custom lights 01-04.
 #define BD_UNISON_REPORT_PAD_LEFT           0x10
@@ -41,9 +45,13 @@
 #define BD_UNISON_REPORT_PAD_UP             0x40
 #define BD_UNISON_REPORT_PAD_DOWN           0x80
 
-static uint8_t last_report[BD_UNISON_REPORT_SIZE];
-static int last_report_valid = 0;
-static hid_device *handle = NULL;
+struct bd_unison_device {
+  hid_device *handle;
+  uint8_t last_report[BD_UNISON_REPORT_SIZE];
+  int last_report_valid;
+};
+
+static bd_unison_device_t *device = NULL;
 
 static int bd_unison_is_lights_interface(const struct hid_device_info *info) {
   if(info->product_string == NULL || wcscmp(info->product_string, BD_UNISON_PRODUCT) != 0) {
@@ -54,50 +62,72 @@ static int bd_unison_is_lights_interface(const struct hid_device_info *info) {
          info->interface_number == BD_UNISON_VENDOR_INTERFACE;
 }
 
-int bd_unison_open(void) {
-  if(handle != NULL) {
-    return 0;
-  }
+static int bd_unison_compare_paths(const void *a, const void *b) {
+  return strcmp(*(const char * const *)a, *(const char * const *)b);
+}
 
+int bd_unison_count_devices(void) {
   hid_init();
 
+  int count = 0;
   struct hid_device_info *devs = hid_enumerate(BD_UNISON_VID, BD_UNISON_PID);
   for(struct hid_device_info *cur = devs; cur != NULL; cur = cur->next) {
     if(bd_unison_is_lights_interface(cur)) {
-      handle = hid_open_path(cur->path);
-      if(handle != NULL) {
-        break;
-      }
+      count++;
     }
   }
   hid_free_enumeration(devs);
 
-  if(handle == NULL) {
-    return -1;
+  return count;
+}
+
+int bd_unison_open_devices(bd_unison_device_t **devices, int max_devices) {
+  hid_init();
+
+  const char *paths[BD_UNISON_MAX_ENUMERATED];
+  int path_count = 0;
+
+  struct hid_device_info *devs = hid_enumerate(BD_UNISON_VID, BD_UNISON_PID);
+  for(struct hid_device_info *cur = devs; cur != NULL && path_count < BD_UNISON_MAX_ENUMERATED; cur = cur->next) {
+    if(bd_unison_is_lights_interface(cur)) {
+      paths[path_count++] = cur->path;
+    }
   }
 
-  last_report_valid = 0;
-  return 0;
+  qsort(paths, path_count, sizeof(paths[0]), bd_unison_compare_paths);
+
+  int count = 0;
+  for(int i = 0; i < path_count && count < max_devices; i++) {
+    hid_device *handle = hid_open_path(paths[i]);
+    if(handle == NULL) {
+      continue;
+    }
+
+    bd_unison_device_t *dev = calloc(1, sizeof(*dev));
+    if(dev == NULL) {
+      hid_close(handle);
+      break;
+    }
+
+    dev->handle = handle;
+    devices[count++] = dev;
+  }
+  hid_free_enumeration(devs);
+
+  return count;
 }
 
-int bd_unison_close(void) {
-  if(handle == NULL) {
-    return 0;
+void bd_unison_close_device(bd_unison_device_t *dev) {
+  if(dev == NULL) {
+    return;
   }
 
-  hid_close(handle);
-  handle = NULL;
-  hid_exit();
-
-  return 0;
+  hid_close(dev->handle);
+  free(dev);
 }
 
-int bd_unison_is_open(void) {
-  return handle != NULL;
-}
-
-int bd_unison_set_lights(uint8_t cab_state, uint8_t pad_state) {
-  if(handle == NULL) {
+int bd_unison_write_lights(bd_unison_device_t *dev, const bd_unison_lights_t *lights) {
+  if(dev == NULL) {
     return -1;
   }
 
@@ -106,32 +136,71 @@ int bd_unison_set_lights(uint8_t cab_state, uint8_t pad_state) {
   report[1] = BD_UNISON_CMD_SET_LIGHTS;
 
   uint8_t *cab = &report[BD_UNISON_REPORT_CAB_BYTE];
-  if(cab_state & BD_UNISON_LIGHT_CAB_MARQUEE_UP_LEFT)  *cab |= BD_UNISON_REPORT_MARQUEE_UP_LEFT;
-  if(cab_state & BD_UNISON_LIGHT_CAB_MARQUEE_UP_RIGHT) *cab |= BD_UNISON_REPORT_MARQUEE_UP_RIGHT;
-  if(cab_state & BD_UNISON_LIGHT_CAB_MARQUEE_LR_LEFT)  *cab |= BD_UNISON_REPORT_MARQUEE_LR_LEFT;
-  if(cab_state & BD_UNISON_LIGHT_CAB_MARQUEE_LR_RIGHT) *cab |= BD_UNISON_REPORT_MARQUEE_LR_RIGHT;
-  if(cab_state & BD_UNISON_LIGHT_CAB_BASS_LEFT)        *cab |= BD_UNISON_REPORT_BASS_LEFT;
-  if(cab_state & BD_UNISON_LIGHT_CAB_BASS_RIGHT)       *cab |= BD_UNISON_REPORT_BASS_RIGHT;
+  if(lights->cab & BD_UNISON_LIGHT_CAB_MARQUEE_UP_LEFT)  *cab |= BD_UNISON_REPORT_MARQUEE_UP_LEFT;
+  if(lights->cab & BD_UNISON_LIGHT_CAB_MARQUEE_UP_RIGHT) *cab |= BD_UNISON_REPORT_MARQUEE_UP_RIGHT;
+  if(lights->cab & BD_UNISON_LIGHT_CAB_MARQUEE_LR_LEFT)  *cab |= BD_UNISON_REPORT_MARQUEE_LR_LEFT;
+  if(lights->cab & BD_UNISON_LIGHT_CAB_MARQUEE_LR_RIGHT) *cab |= BD_UNISON_REPORT_MARQUEE_LR_RIGHT;
+  if(lights->cab & BD_UNISON_LIGHT_CAB_BASS_LEFT)        *cab |= BD_UNISON_REPORT_BASS_LEFT;
+  if(lights->cab & BD_UNISON_LIGHT_CAB_BASS_RIGHT)       *cab |= BD_UNISON_REPORT_BASS_RIGHT;
 
-  if(cab_state & BD_UNISON_LIGHT_CAB_BUTTONS_P1) report[BD_UNISON_REPORT_P1_BTN_BYTE] = BD_UNISON_REPORT_BUTTONS_ALL;
-  if(cab_state & BD_UNISON_LIGHT_CAB_BUTTONS_P2) report[BD_UNISON_REPORT_P2_BTN_BYTE] = BD_UNISON_REPORT_BUTTONS_ALL;
+  report[BD_UNISON_REPORT_P1_BTN_BYTE] = lights->p1_buttons & BD_UNISON_REPORT_BUTTONS_MASK;
+  report[BD_UNISON_REPORT_P2_BTN_BYTE] = lights->p2_buttons & BD_UNISON_REPORT_BUTTONS_MASK;
 
   uint8_t *pad = &report[BD_UNISON_REPORT_P1_PAD_BYTE];
-  if(pad_state & BD_UNISON_LIGHT_PAD_LEFT)  *pad |= BD_UNISON_REPORT_PAD_LEFT;
-  if(pad_state & BD_UNISON_LIGHT_PAD_RIGHT) *pad |= BD_UNISON_REPORT_PAD_RIGHT;
-  if(pad_state & BD_UNISON_LIGHT_PAD_UP)    *pad |= BD_UNISON_REPORT_PAD_UP;
-  if(pad_state & BD_UNISON_LIGHT_PAD_DOWN)  *pad |= BD_UNISON_REPORT_PAD_DOWN;
+  if(lights->pad & BD_UNISON_LIGHT_PAD_LEFT)  *pad |= BD_UNISON_REPORT_PAD_LEFT;
+  if(lights->pad & BD_UNISON_LIGHT_PAD_RIGHT) *pad |= BD_UNISON_REPORT_PAD_RIGHT;
+  if(lights->pad & BD_UNISON_LIGHT_PAD_UP)    *pad |= BD_UNISON_REPORT_PAD_UP;
+  if(lights->pad & BD_UNISON_LIGHT_PAD_DOWN)  *pad |= BD_UNISON_REPORT_PAD_DOWN;
 
-  if(last_report_valid && memcmp(report, last_report, sizeof(report)) == 0) {
+  if(dev->last_report_valid && memcmp(report, dev->last_report, sizeof(report)) == 0) {
     return 0;
   }
 
-  if(hid_write(handle, report, sizeof(report)) < 0) {
-    last_report_valid = 0;
+  if(hid_write(dev->handle, report, sizeof(report)) < 0) {
+    dev->last_report_valid = 0;
     return -1;
   }
 
-  memcpy(last_report, report, sizeof(report));
-  last_report_valid = 1;
+  memcpy(dev->last_report, report, sizeof(report));
+  dev->last_report_valid = 1;
   return 0;
+}
+
+int bd_unison_open(void) {
+  if(device != NULL) {
+    return 0;
+  }
+
+  if(bd_unison_open_devices(&device, 1) != 1) {
+    device = NULL;
+    return -1;
+  }
+
+  return 0;
+}
+
+int bd_unison_close(void) {
+  if(device == NULL) {
+    return 0;
+  }
+
+  bd_unison_close_device(device);
+  device = NULL;
+  hid_exit();
+
+  return 0;
+}
+
+int bd_unison_is_open(void) {
+  return device != NULL;
+}
+
+int bd_unison_set_lights(uint8_t cab_state, uint8_t pad_state) {
+  bd_unison_lights_t lights;
+  lights.cab = cab_state;
+  lights.p1_buttons = (cab_state & BD_UNISON_LIGHT_CAB_BUTTONS_P1) ? BD_UNISON_LIGHT_BTN_ALL : 0;
+  lights.p2_buttons = (cab_state & BD_UNISON_LIGHT_CAB_BUTTONS_P2) ? BD_UNISON_LIGHT_BTN_ALL : 0;
+  lights.pad = pad_state;
+
+  return bd_unison_write_lights(device, &lights);
 }
